@@ -27,7 +27,7 @@ OPENGL_LIBS       = -lGL -lGLU -lglut -lGLEW #-lX11
 
 ########################################################################################
 
-TARGET = run/CUClass
+TARGET = run/CLispy
 CC = g++
 NXX = nvcc
 LD = g++
@@ -62,6 +62,7 @@ $(TARGET): $(OBJECTS)
 
 
 HEADERS := $(wildcard include/*.cuh)
+# SOURCES := $(wildcard src/*.cpp src/*.c src/*.cu)
 SOURCES := $(wildcard src/*.cpp src/*.cu)
 OBJECTS := $(addprefix obj/, $(notdir $(SOURCES:.cpp=.o))  $(notdir $(SOURCES:.cu=.o)))
 #
