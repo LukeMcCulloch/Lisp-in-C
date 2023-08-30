@@ -1,5 +1,6 @@
 
 #include "../include/basic.h"
+#include "../include/linenoise.hpp"
 
 
 std::string read(std::string input) {
@@ -21,11 +22,28 @@ std::string rep(std::string input) {
 }
 
 int main() {
+
+   const auto history_path = "history.txt";
+   // Load history
+   linenoise::LoadHistory(history_path);
+
    std::string input;
    for (;;) {
-      std::cout << "user> ";
-      if (!std::getline(std::cin, input)) break;
+      auto quit = linenoise::Readline("user> ", input);
+      
+      //std::cout << "user> ";
+      if (quit) break;
+      //if (!std::getline(std::cin, input)) break;
+      
       std::cout << rep(input) << std::endl;
+
+      // Add text to history
+      linenoise::AddHistory(input.c_str());
+         
    }
+
+   // Save history
+   linenoise::SaveHistory(history_path);
+   
    return 0;
 }
