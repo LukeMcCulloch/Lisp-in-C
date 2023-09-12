@@ -31,11 +31,11 @@ TARGET = run/CLispy
 CC = g++
 NXX = nvcc
 LD = g++
-CFLAGS =  -I./include -I./src #adding these includes is essential!# -Wall  -Werror -ansi -pedantic  $(BNCpp_INCLUDE_PATH) -I./include -I./src
+CFLAGS =  -Wall -Wextra -Werror  -I./include -I./src #adding these includes is essential!# -Wall  -Werror -ansi -pedantic  $(BNCpp_INCLUDE_PATH) -I./include -I./src
 LFLAGS = #--ansi -pedantic -fopenmp -O1 # -Wall  -Werror -ansi -pedantic $(BNCpp_LIBRARY_PATH)
-NVFLAGS = -g -G  -O0  
+NVFLAGS = # -g -G  -O0  
 LIBS =  $(OPENGL_LIBS) $(SUITESPARSE_LIBS) $(BLAS_LIBS)
-CUDAFLAGS = -arch=sm_75 #use > nvidia-smi 
+CUDAFLAGS = #-arch=sm_75 #use > nvidia-smi 
 #                        to find your Card architecture 
 #                        and CUDA verison quickly
 # see also: https://stackoverflow.com/questions/35656294/cuda-how-to-use-arch-and-code-and-sm-vs-compute
@@ -57,7 +57,7 @@ $(TARGET): $(OBJECTS)
 	@echo "headers = " $(HEADERS)
 	@echo "sources = " $(SOURCES)
 	@echo "objects = " $(OBJECTS)
-	$(NXX) $(SOURCES) -o $(TARGET) $(CUDAFLAGS) $(NVFLAGS) $(CFLAGS)
+	$(CC) $(SOURCES) -o $(TARGET) $(CUDAFLAGS) $(NVFLAGS) $(CFLAGS)
 
 
 
@@ -94,7 +94,7 @@ OBJECTS := $(addprefix obj/, $(notdir $(SOURCES:.cpp=.o))  $(notdir $(SOURCES:.c
 #	$(NXX) -c $< -o $@ $(CUDAFLAGS) $(NVFLAGS) $(CFLAGS)
 
 obj/%.o: ${SOURCES} ${HEADERS}
-	$(NXX) -c $< -o $@ $(CUDAFLAGS) $(NVFLAGS) $(CFLAGS)
+	$(CC) -c $< -o $@ $(CUDAFLAGS) $(NVFLAGS) $(CFLAGS)
 
 
 # clean:
