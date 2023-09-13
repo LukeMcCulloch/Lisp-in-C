@@ -15,6 +15,7 @@ std::vector<std::string_view> tokenize(std::string &input) {
     Tokenizer tokenizer { input };
     std::vector<std::string_view> vector;
     while (auto token = tokenizer.next()) {
+        std::cout << "[" << *token << "]\n";//dereference because it's optional
         vector.push_back(*token);
     }
     return vector;

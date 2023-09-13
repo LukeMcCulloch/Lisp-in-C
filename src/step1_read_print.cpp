@@ -4,7 +4,7 @@
 #include "../include/reader.h"
 #include "../include/printer.h"
 
-
+/*
 std::string READ(std::string input) {
 //Value* READ(std::string input) {
    Tokenizer tokenizer { input };
@@ -14,28 +14,29 @@ std::string READ(std::string input) {
    return input;
    //return read_str(input);
 }
+*/
 
 
-// Value* READ(std::string input) {
-//    return read_str(input);
-// }
+Value* READ(std::string input) {
+    return read_str(input);
+}
 
-// Value* EVAL(Value *input) {
+Value* EVAL(Value *input) {
+   return input;
+}
+
+std::string PRINT(Value* input) {
+   return pr_str(input);
+}
+
+// std::string EVAL(std::string input) {
 //    return input;
 // }
 
-// Value* PRINT(Value* input) {
-//    return pr_str(input);
+// std::string PRINT(std::string input) {
+//    return input;
+//    //return pr_str(input);
 // }
-
-std::string EVAL(std::string input) {
-   return input;
-}
-
-std::string PRINT(std::string input) {
-   return input;
-   //return pr_str(input);
-}
 
 
 std::string rep(std::string input) {
