@@ -25,12 +25,13 @@ class Tokenizer {
             case '\t':
             case '\n':
             case ',':
+                ++m_index;
                 break;
             case '~': {
-                if (m_index + 1 < m_input.length() && m_input.at(m_index +1) == '@') { 
-                    return view.substr(m_index++, 2);
+                if (m_index + 1 < m_input.length() && m_input.at(m_index) == '@') { 
+                    return view.substr(m_index - 2, 2);
                 }
-                return view.substr(m_index, 1);
+                return view.substr(m_index - 1, 1);
             }
             case '[':
             case ']':
@@ -42,7 +43,7 @@ class Tokenizer {
             case '`':
             case '^':
             case '@':
-                return view.substr(m_index, 1);
+                return view.substr(m_index++, 1);
             case '"': {
                 size_t start = m_index;
                 ++m_index;
@@ -50,7 +51,7 @@ class Tokenizer {
                     c = m_input.at(m_index);
                     switch (c) {
                         case '"':
-                            return view.substr(start, m_input.length() - m_index); //error
+                            return view.substr(start, m_index - start);
                         case '\\':
                             ++m_index;
                             break;
@@ -58,7 +59,7 @@ class Tokenizer {
                     ++m_index;
                 }
                 std::cout << "EOF\n";
-                return view.substr(start, m_input.length() - m_index); //error
+                return view.substr(start, m_index - start);
             }
             case ';': {
                 size_t start = m_index;
@@ -67,7 +68,8 @@ class Tokenizer {
                     if (c == '\n') break;
                     ++m_index;
                 }
-                return view.substr(start, m_input.length() - m_index);
+                //return view.substr(start, m_input.length() - m_index);
+                return view.substr(start, m_index - start);
             }
             default: {
                 size_t start = m_index;
@@ -94,13 +96,11 @@ class Tokenizer {
                     default:        
                         ++m_index;
                     }
-                    //++m_index;
                 }
-                return view.substr(start, m_input.length() - m_index);
+                return view.substr(start, m_index - start);
             }
-
             }
-            ++m_index;
+            //++m_index;
         }
         return {};
     }
