@@ -18,14 +18,17 @@ std::string READ(std::string input) {
 
 
 Value* READ(std::string input) {
+    debugprint("read");
     return read_str(input);
 }
 
 Value* EVAL(Value *input) {
+    debugprint("EVAL");
    return input;
 }
 
 std::string PRINT(Value* input) {
+    debugprint("PRINT");
    return pr_str(input);
 }
 
@@ -40,6 +43,7 @@ std::string PRINT(Value* input) {
 
 
 std::string rep(std::string input) {
+    debugprint("rep");
    auto ast    = READ(input);
    auto result = EVAL(ast);
    return PRINT(result);

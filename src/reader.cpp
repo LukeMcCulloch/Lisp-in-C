@@ -1,4 +1,5 @@
 #include "../include/reader.h"
+#include "../include/basic.h"
 
 
 // std::vector<std::string_view> tokenize(std::string &input) {
@@ -15,7 +16,8 @@ std::vector<std::string_view> tokenize(std::string &input) {
     Tokenizer tokenizer { input };
     std::vector<std::string_view> vector;
     while (auto token = tokenizer.next()) {
-        std::cout << "[" << *token << "]\n";//dereference because it's optional
+        //std::cout << "[" << *token << "]\n";//dereference because it's optional
+        printTokens(*token);
         vector.push_back(*token);
     }
     return vector;

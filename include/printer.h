@@ -1,7 +1,9 @@
 #ifndef printer_h
 #define printer_h
 
+#include <iostream>
 #include <string>
+
 
 #include "../include/types.h"
 
