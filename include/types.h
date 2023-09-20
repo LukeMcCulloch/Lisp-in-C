@@ -13,8 +13,14 @@ class Value {
 public:
     virtual std::string inspect() { 
         debugprint("Value::inspect");
-        return ""; } //{ assert(0); }
+        assert(0); 
+    }
 };
+
+//     virtual std::string inspect() { 
+//         debugprint("Value::inspect");
+//         return ""; } //{ assert(0); }
+// };
 
 
 

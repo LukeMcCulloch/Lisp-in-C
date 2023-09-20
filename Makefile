@@ -30,7 +30,6 @@ OPENGL_LIBS       = -lGL -lGLU -lglut -lGLEW #-lX11
 TARGET = run/CLispy
 CC = g++
 NXX = nvcc
-LD = g++
 CFLAGS =  -Wall -Wextra -Werror  -I./include -I./src #adding these includes is essential!# -Wall  -Werror -ansi -pedantic  $(BNCpp_INCLUDE_PATH) -I./include -I./src
 LFLAGS = #--ansi -pedantic -fopenmp -O1 # -Wall  -Werror -ansi -pedantic $(BNCpp_LIBRARY_PATH)
 NVFLAGS = # -g -G  -O0  
@@ -53,18 +52,25 @@ all: $(TARGET)
 # rule for the target comes first
 # $<  The input file
 # $@  The file that is being made right now 
-$(TARGET): $(OBJECTS)
+
+OBJDIR := obj
+
+
+$(TARGET): $(OBJECTS) 
+	@echo "target = " $(TARGET)
 	@echo "headers = " $(HEADERS)
 	@echo "sources = " $(SOURCES)
 	@echo "objects = " $(OBJECTS)
-	$(CC) $(SOURCES) -o $(TARGET) $(CUDAFLAGS) $(NVFLAGS) $(CFLAGS)
+	$(CC) $(SOURCES) -MMD -o $@ $< $(TARGET) $(CUDAFLAGS) $(NVFLAGS) $(CFLAGS)
+
+#$(OBJDIR)/%.o: src/%.cpp  ${HEADERS} $(DEPDIR)/%.d | $(DEPDIR)
+#	$(CC) -c $< -o $@ $(CUDAFLAGS) $(NVFLAGS) $(CFLAGS)
 
 
-
-HEADERS := $(wildcard include/*.cuh)
+HEADERS := $(wildcard include/*.h include/*.hpp include/*.cuh)
 # SOURCES := $(wildcard src/*.cpp src/*.c src/*.cu)
 SOURCES := $(wildcard src/*.cpp src/*.cu)
-OBJECTS := $(addprefix obj/, $(notdir $(SOURCES:.cpp=.o))  $(notdir $(SOURCES:.cu=.o)))
+OBJECTS := $(addprefix $(OBJDIR)/, $(notdir $(SOURCES:.cpp=.o))  $(notdir $(SOURCES:.cu=.o)))
 #
 # $(notdir names…): Extracts all but the directory-part of each 
 #                   file name in names
@@ -78,11 +84,23 @@ OBJECTS := $(addprefix obj/, $(notdir $(SOURCES:.cpp=.o))  $(notdir $(SOURCES:.c
 
 
 
-
 #DEPS := $(SOURCES:.cpp=.d)
 #.c.d:
 #	$(NXX) -o $< -MM 
 #-include $(DEPS)
+
+#DEPS := $(SOURCES:.cpp=.d)
+#.c.d:
+#	$(CC) -o $< -MM 
+#-include $(DEPS)
+
+#DEPS := $(SOURCES:.o=.d)
+
+#-include $(DEPS)
+
+#%.o: %.c
+#    $(CC) -c $(CFLAGS) -MM -MF $(patsubst %.o,%.d,$@) -o $@ $<
+
 
 # phony improves performance here:
 # otherwise make clean will clean even when unecessary
@@ -90,11 +108,18 @@ OBJECTS := $(addprefix obj/, $(notdir $(SOURCES:.cpp=.o))  $(notdir $(SOURCES:.c
 .PHONY: clean
 
 
-#obj/%.o: src/%.cpp src/%.cu ${HEADERS}
+# .PRECIOUS: $(OBJDIR)/%.o 
+
+
+
+#$(OBJDIR)/%.o: src/%.cpp src/%.cu ${HEADERS}
 #	$(NXX) -c $< -o $@ $(CUDAFLAGS) $(NVFLAGS) $(CFLAGS)
 
-obj/%.o: ${SOURCES} ${HEADERS}
-	$(CC) -c $< -o $@ $(CUDAFLAGS) $(NVFLAGS) $(CFLAGS)
+#$(OBJDIR)/%.o: ${SOURCES} ${HEADERS} $(DEPDIR)/%.d | $(DEPDIR)
+#	$(CC) -c $< -o $@ $(CUDAFLAGS) $(NVFLAGS) $(CFLAGS) 
+
+#$(OBJDIR)/%.o: src/%.cpp  ${HEADERS} $(DEPDIR)/%.d | $(DEPDIR)
+#	$(CC) -c $< -o $@ $(CUDAFLAGS) $(NVFLAGS) $(CFLAGS)
 
 
 # clean:
@@ -107,3 +132,25 @@ clean:
 	rm -f $(OBJECTS)
 	rm -f $(TARGET)
 	rm -f $(TARGET).exe
+
+
+
+DEPDIR := .deps
+DEPFLAGS = -MT $@ -MMD -MP -MF $(DEPDIR)/$*.d
+
+#COMPILE.c = $(CC) $(DEPFLAGS) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -c
+
+%.o : %.c
+%.o : %.c $(DEPDIR)/%.d | $(DEPDIR)
+		$(TARGET) $(OUTPUT_OPTION) $<
+
+$(DEPDIR): ; @mkdir -p $@
+
+DEPFILES := $(SRCS:%.c=$(DEPDIR)/%.d)
+$(DEPFILES):
+
+include $(wildcard $(DEPFILES))
+
+#
+#DO NOT DELETE THIS LINE
+#

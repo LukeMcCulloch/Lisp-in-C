@@ -14,7 +14,7 @@ std::string ListValue::inspect() {
     } else {
         out.append(")");
     }
-    out[out.length() - 1] = ')';
+    //out[out.length() - 1] = ')';
     return out;
 }
 

@@ -9,4 +9,5 @@ std::string pr_str(Value *value) {
     } else {
         return "";
     }
+    //return value->inspect();
 }

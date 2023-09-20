@@ -15,6 +15,7 @@ class Tokenizer {
         : m_input { input } {}
 
     std::optional<std::string_view> next() {
+        //debugprint("Tokenizer::next");
         auto view = std::string_view(m_input);
 
         while (m_index < m_input.length()) {

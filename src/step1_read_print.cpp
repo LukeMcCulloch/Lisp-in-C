@@ -51,6 +51,8 @@ std::string rep(std::string input) {
 
 int main() {
 
+   //debugprint("Luke's CppLispy");
+
    const auto history_path = "history.txt";
    // Load history
    linenoise::LoadHistory(history_path);
@@ -69,6 +71,7 @@ int main() {
       linenoise::AddHistory(input.c_str());
          
    }
+
 
    // Save history
    linenoise::SaveHistory(history_path);
