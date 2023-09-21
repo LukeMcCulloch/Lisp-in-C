@@ -72,6 +72,7 @@ Value *read_form(Reader &reader) {
 
 
 Value* read_integer(Reader &reader) { //maybe
+    debugspot("read_integer", false);
     auto token = reader.next(); //do actually consume the token
     long num = 0;
 
