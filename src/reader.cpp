@@ -98,6 +98,13 @@ HashMapValue *read_hash_map(Reader &reader) {
         }
 
         auto key = read_form(reader);
+        token = reader.peek();
+        if (*token == "}") {
+            std::cerr << "hash-map key without value!\n";
+            reader.next();
+            return map;
+        }
+        
         auto value = read_form(reader);
 
         map->set(key, value);
