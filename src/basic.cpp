@@ -12,6 +12,9 @@ void debugprint(std::string input) {
 void debugspot(std::string input, bool flag) {
     if (flag) { std::cout << input << std::endl; }
 }
+void debugspot(long input, bool flag) {
+    if (flag) { std::cout << input << std::endl; }
+}
 
 
 bool printTokensCheck() {return 0;}

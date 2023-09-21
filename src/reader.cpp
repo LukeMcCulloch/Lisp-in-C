@@ -54,6 +54,10 @@ Value *read_form(Reader &reader) {
             return read_quoted_value(reader);
         case '^':
             return read_with_meta(reader);
+        case '-':
+            if (reader.peek().value().length() == 1) 
+                return read_atom(reader);
+            return read_integer(reader);
         case '0':
         case '1':
         case '2':
@@ -75,12 +79,17 @@ Value* read_integer(Reader &reader) { //maybe
     debugspot("read_integer", false);
     auto token = reader.next(); //do actually consume the token
     long num = 0;
-
+    bool negative = false;
     for (char c : *token) {//optional token so dereference it
-        num *= 10;//base 10
-        int digit = c - 48; // 0
-        num += digit;
+        if (c == '-') {
+            negative = true;
+        } else {
+            num *= 10;//base 10
+            int digit = c - 48; // 0
+            num += digit;
+        }
     }
+    if (negative) num *= -1;
 
     return new IntegerValue { num };
 }

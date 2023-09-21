@@ -27,10 +27,14 @@ SymbolValue* Value::as_symbol() {
 
 }
 
+// IntegerValue* Value::as_integer() {
+//     assert(type() == Type::Integer);
+//     return static_cast<IntegerValue*>(this);
+
+// }
 IntegerValue* Value::as_integer() {
     assert(type() == Type::Integer);
-    return static_cast<IntegerValue*>(this);
-
+    return static_cast<IntegerValue *>(this);
 }
 
 FnValue* Value::as_fn() {

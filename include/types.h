@@ -33,6 +33,7 @@ public:
 
     virtual std::string inspect() { assert(0); }
     virtual Type type() { assert(0);}
+    //virtual Type type() { const = 0;}
 
    // ListVlaue* as_list() { return static_cast<ListValue*>(this); }
 
@@ -50,7 +51,7 @@ public:
 class ListValue : public Value {
 
 public:
-    ListValue() {}
+    ListValue() { }
 
     void push(Value *value) {
         m_list.push_back(value);
@@ -58,6 +59,14 @@ public:
 
     virtual Type type() { return Type::List; }
     virtual std::string inspect();
+
+    auto begin() { return m_list.begin(); }
+    auto end() { return m_list.end(); }
+    
+
+    bool is_empty() {return m_list.size() == 0;}
+    size_t size() { return m_list.size();}
+    Value* at(size_t index) { return m_list.at(index); }
 
 protected:
     std::vector<Value*> m_list {};
@@ -83,8 +92,8 @@ struct HashMapHash
 };
 
 struct HashMapPredicate {
-    constexpr bool operator()(Value* lhs, Value* rhs) const {
-        return lhs == rhs; // Fixme pointer comparison... we need a real equality later
+    bool operator()(Value* lhs, Value* rhs) const {
+        return lhs->inspect() == rhs->inspect(); // Fixme pointer comparison... we need a real equality later
     }
 };
 

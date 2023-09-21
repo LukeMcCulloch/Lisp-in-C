@@ -71,6 +71,7 @@ class Tokenizer {
                 }
                 return view.substr(start, m_index - start);
             }
+            case '-':
             //case '0': //maybe later
             case '1':
             case '2':
@@ -83,6 +84,7 @@ class Tokenizer {
             case '9': {
                 size_t start = m_index;
                 bool done = false;
+                ++m_index;
                 while (!done && m_index < m_input.length()) {
                     c = m_input.at(m_index);
                     switch (c) {
@@ -103,35 +105,14 @@ class Tokenizer {
                         break;
                     }
                 }
+                if (m_index - start == 1 && view.at(start) == '-') {
+                    --m_index;
+                    return tokenize_symbol();
+                }
                 return view.substr(start, m_index - start);
             }
             default: {
-                size_t start = m_index;
-                bool done = false;
-                while (!done && m_index < m_input.length()) {
-                    c = m_input.at(m_index);
-                    switch (c) {
-                    case ' ':
-                    case '\t':
-                    case '\n':
-                    case '[':
-                    case ']':
-                    case '{':
-                    case '}':
-                    case '(':
-                    case ')':
-                    case '\'':
-                    case '"':
-                    case '`':
-                    case ',':
-                    case ';':
-                        done = true;
-                        break;
-                    default:        
-                        ++m_index;
-                    }
-                }
-                return view.substr(start, m_index - start);
+                return tokenize_symbol();
             }
             }
             //++m_index;
@@ -140,9 +121,43 @@ class Tokenizer {
     }
 
 private:
+
+    std::string_view tokenize_symbol() {
+        auto view = std::string_view(m_input);
+        size_t start = m_index;
+        bool done = false;
+        char c;
+        while (!done && m_index < m_input.length()) {
+            c = m_input.at(m_index);
+            switch (c) {
+            case ' ':
+            case '\t':
+            case '\n':
+            case '[':
+            case ']':
+            case '{':
+            case '}':
+            case '(':
+            case ')':
+            case '\'':
+            case '"':
+            case '`':
+            case ',':
+            case ';':
+                done = true;
+                break;
+            default:        
+                ++m_index;
+            }
+        }
+        return view.substr(start, m_index - start);
+    }
+
     std::string &m_input;
     size_t m_index {0};
 };
+
+
 
 
 
