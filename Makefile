@@ -45,7 +45,7 @@ CUDAFLAGS = #-arch=sm_75 #use > nvidia-smi
 ########################################################################################
 ## Feel free to edit below this line, if you know make.
 
-
+# $^ copy dependencies from line above
 
 
 all: $(TARGET)
