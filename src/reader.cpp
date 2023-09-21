@@ -48,7 +48,12 @@ Value *read_form(Reader &reader) {
         case '{':
             return read_hash_map(reader);
         case '\'':
+        case '`':
+        case '~':
+        case '@':
             return read_quoted_value(reader);
+        case '^':
+            return read_with_meta(reader);
         default:
             return read_atom(reader);
     }
@@ -65,11 +70,53 @@ Value* read_quoted_value(Reader &reader) {
         list->push(read_form(reader));
         return list;
     }
+    case '`': {
+        reader.next();
+        auto list = new ListValue {};
+        list->push(new SymbolValue { "quasiquote" } );
+        list->push(read_form(reader));
+        return list;
+    }
+    case '~': {
+        reader.next();
+        auto list = new ListValue {};
+        list->push(new SymbolValue { "unquote" } );
+        list->push(read_form(reader));
+        return list;
+    }
+    case '@': {
+        if (token.value().length() > 1 && token.value()[1] == '@') {
+            reader.next();
+            auto list = new ListValue {};
+            list->push(new SymbolValue { "splice-unquote" } );
+            list->push(read_form(reader));
+            return list;
+        } else {
+            reader.next();
+            auto list = new ListValue {};
+            list->push(new SymbolValue { "deref" } );
+            list->push(read_form(reader));
+            return list;
+        }
+    }
     default:
         std::cerr << "bad quote\n";
         abort();
     }
 
+}
+
+
+Value* read_with_meta(Reader &reader) {
+    reader.next(); // consume '^'
+
+    auto list = new ListValue {};
+    auto meta = read_form(reader);
+    auto value = read_form(reader);
+    list->push(new SymbolValue { "with-meta" } );
+    list->push(value);
+    list->push(meta);
+    return list;
 }
 
 ListValue *read_list(Reader &reader) {
