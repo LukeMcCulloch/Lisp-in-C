@@ -43,6 +43,12 @@ FnValue* Value::as_fn() {
 
 }
 
+ExceptionValue* Value::as_exception() {
+    assert(type() == Type::Exception);
+    return static_cast<ExceptionValue*>(this);
+
+}
+
 
 std::string ListValue::inspect() {
     

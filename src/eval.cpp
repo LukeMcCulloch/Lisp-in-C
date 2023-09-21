@@ -69,8 +69,9 @@ Value* eval_ast(Value *ast, Env &env) {
         //debugspot(ast->inspect(),true);
         auto search = env.find(ast->as_symbol());
         if (search == env.end()) {
-            std::cerr << "error , " << ast->as_symbol()->str() << "not found\n";
-            return new SymbolValue {"nil"};
+            throw new ExceptionValue { ast->as_symbol()->str() + " not found" };
+        
+        return new SymbolValue {"nil"};
         } 
         return search->second;
     }
@@ -81,24 +82,47 @@ Value* eval_ast(Value *ast, Env &env) {
         }
         return result;
     }
+    case Value::Type::Vector: {
+        auto result = new VectorValue {};
+        for (auto val : *ast->as_vector()) { //ast must be dereferenced!
+            result->push(EVAL(val, env));
+        }
+        return result;
+    }
+    case Value::Type::HashMap: {
+        auto result = new HashMapValue {};
+        for (auto pair : *ast->as_hash_map()) { //ast must be dereferenced!
+            auto val = EVAL(pair.second, env);
+            result->set(pair.first, val);
+        }
+        return result;
+    }
     default:
         return ast;
     }
 }
 
+
+
 std::string PRINT(Value* input) {
     debugprint("PRINT");
-   return pr_str(input);
+    return pr_str(input);
 }
 
 
 
 std::string rep(std::string input, Env &env) {
-    debugprint("rep");
-   auto ast    = READ(input);
-   auto result = EVAL(ast, env);
-   return PRINT(result);
+    try {
+        debugprint("rep");
+        auto ast    = READ(input);
+        auto result = EVAL(ast, env);
+        return PRINT(result);
+    } catch (ExceptionValue* exception) {
+        std::cerr << exception->message() <<std::endl;
+        return "";
+    }
 }
+
 
 Value* add(size_t argc, Value** args) {
     assert(argc ==2);
@@ -177,7 +201,7 @@ int main() {
     env[new SymbolValue("-")] = new FnValue { sub };
     env[new SymbolValue("*")] = new FnValue { mul };
     env[new SymbolValue("/")] = new FnValue { div };
-    
+
     std::string input;
     for (;;) {
         auto quit = linenoise::Readline("user> ", input);

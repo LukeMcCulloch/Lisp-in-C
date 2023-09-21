@@ -18,6 +18,7 @@ class HashMapValue;
 class SymbolValue;
 class IntegerValue;
 class FnValue;
+class ExceptionValue;
 
 class Value {
 public:
@@ -28,21 +29,21 @@ public:
         HashMap,
         Symbol,
         Integer,
-        Fn
+        Fn,
+        Exception,
     };
 
     virtual std::string inspect() { assert(0); }
     virtual Type type() { assert(0);}
-    //virtual Type type() { const = 0;}
 
-   // ListVlaue* as_list() { return static_cast<ListValue*>(this); }
-
+    //cast it if you have a pointer to the base class:
     ListValue* as_list();
     VectorValue* as_vector();
     HashMapValue* as_hash_map();
     SymbolValue* as_symbol();
     IntegerValue* as_integer();
     FnValue* as_fn();
+    ExceptionValue* as_exception();
 };
 
 
@@ -115,6 +116,10 @@ public:
         return nullptr;
     }
 
+    
+    auto begin() { return m_map.begin(); }
+    auto end() { return m_map.end(); }
+
 private:
     std::unordered_map<Value*, Value*, HashMapHash, HashMapPredicate> m_map;
 
@@ -177,6 +182,29 @@ public:
 
 private:
     FnPtr m_fn { nullptr };
+};
+
+
+
+// do this the old fashioned way for now (use variadic templates later)
+class ExceptionValue : public Value {
+public:
+    ExceptionValue( std::string message)
+        : m_message {message} {}
+
+
+    
+    virtual Type type() { return Type::Exception; }
+
+    virtual std::string inspect() {
+        return "<exception" + m_message + ">";
+    }
+
+    const std::string &message() { return m_message; }
+
+
+private:
+    std::string m_message;
 };
 
 #endif /* __types_h */
