@@ -47,11 +47,30 @@ Value *read_form(Reader &reader) {
             return read_vector(reader);
         case '{':
             return read_hash_map(reader);
+        case '\'':
+            return read_quoted_value(reader);
         default:
             return read_atom(reader);
     }
 }
 
+Value* read_quoted_value(Reader &reader) {
+    auto token = reader.peek();
+
+    switch (token.value()[0]) {
+    case '\'': {
+        reader.next();
+        auto list = new ListValue {};
+        list->push(new SymbolValue { "quote" } );
+        list->push(read_form(reader));
+        return list;
+    }
+    default:
+        std::cerr << "bad quote\n";
+        abort();
+    }
+
+}
 
 ListValue *read_list(Reader &reader) {
     reader.next(); // consume '('

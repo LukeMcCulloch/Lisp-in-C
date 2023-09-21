@@ -54,6 +54,5 @@ std::string HashMapValue::inspect() {
     } else {
         out.append("}");
     }
-    //out[out.length() - 1] = ')';
     return out;
 }
