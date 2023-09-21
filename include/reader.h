@@ -69,7 +69,40 @@ class Tokenizer {
                     if (c == '\n') break;
                     ++m_index;
                 }
-                //return view.substr(start, m_input.length() - m_index);
+                return view.substr(start, m_index - start);
+            }
+            //case '0': //maybe later
+            case '1':
+            case '2':
+            case '3':
+            case '4':
+            case '5':
+            case '6':
+            case '7':
+            case '8':
+            case '9': {
+                size_t start = m_index;
+                bool done = false;
+                while (!done && m_index < m_input.length()) {
+                    c = m_input.at(m_index);
+                    switch (c) {
+                        case '0':
+                        case '1':
+                        case '2':
+                        case '3':
+                        case '4':
+                        case '5':
+                        case '6':
+                        case '7':
+                        case '8':
+                        case '9':
+                        ++m_index;//maybe
+                        break;
+                    default:
+                        done = true;
+                        break;
+                    }
+                }
                 return view.substr(start, m_index - start);
             }
             default: {
@@ -140,7 +173,7 @@ std::vector<std::string_view> tokenize(std::string &input);
 Value *read_str(std::string &input);
 Value* read_form(Reader &reader);
 //Value *read_string(Reader &reader);
-//Value *read_integer(Reader &reader);
+Value* read_integer(Reader &reader);
 Value* read_quoted_value(Reader &reader);
 Value* read_with_meta(Reader &reader);
 ListValue* read_list(Reader &reader);

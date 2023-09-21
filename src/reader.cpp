@@ -54,9 +54,34 @@ Value *read_form(Reader &reader) {
             return read_quoted_value(reader);
         case '^':
             return read_with_meta(reader);
+        case '0':
+        case '1':
+        case '2':
+        case '3':
+        case '4':
+        case '5':
+        case '6':
+        case '7':
+        case '8':
+        case '9':
+            return read_integer(reader);
         default:
             return read_atom(reader);
     }
+}
+
+
+Value* read_integer(Reader &reader) { //maybe
+    auto token = reader.next(); //do actually consume the token
+    long num = 0;
+
+    for (char c : *token) {//optional token so dereference it
+        num *= 10;//base 10
+        int digit = c - 48; // 0
+        num += digit;
+    }
+
+    return new IntegerValue { num };
 }
 
 Value* read_quoted_value(Reader &reader) {

@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <cassert>
+#include <functional>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -33,7 +34,7 @@ public:
     virtual std::string inspect() { assert(0); }
     virtual Type type() { assert(0);}
 
-   // ListVlaue* as_list() { return static_cast<ListValue*> };
+   // ListVlaue* as_list() { return static_cast<ListValue*>(this); }
 
     ListValue* as_list();
     VectorValue* as_vector();
