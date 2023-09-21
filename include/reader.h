@@ -145,6 +145,8 @@ Value *read_form(Reader &reader);
 //Value *read_quoted_value(Reader &reader);
 //Value *read_with_meta(Reader &reader);
 ListValue *read_list(Reader &reader);
+VectorValue *read_vector(Reader &reader);
+HashMapValue *read_hash_map(Reader &reader);
 //ListValue *read_vector(Reader &reader);
 Value *read_atom(Reader &reader);
 

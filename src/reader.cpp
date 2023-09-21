@@ -34,6 +34,7 @@ Value *read_str(std::string &input) {
     return read_form(reader);
 }
 
+
 Value *read_form(Reader &reader) {
     auto token = reader.peek();
 
@@ -42,11 +43,14 @@ Value *read_form(Reader &reader) {
     switch (token.value()[0]) {
         case '(':
             return read_list(reader);
+        case '[':
+            return read_vector(reader);
+        case '{':
+            return read_hash_map(reader);
         default:
             return read_atom(reader);
     }
 }
-
 
 
 ListValue *read_list(Reader &reader) {
@@ -56,12 +60,51 @@ ListValue *read_list(Reader &reader) {
     while (auto token = reader.peek() ) {
         if (*token == ")") {
             reader.next();
-            break;
+            return list;
         }
         list->push(read_form(reader));
     }
 
+    std::cerr << "EOF\n";
     return list;
+}
+
+
+VectorValue *read_vector(Reader &reader) {
+    reader.next(); // consume '['
+    auto *vector = new VectorValue {};
+
+    while (auto token = reader.peek() ) {
+        if (*token == "]") {
+            reader.next();
+            return vector;
+        }
+        vector->push(read_form(reader));
+    }
+
+    std::cerr << "EOF\n";
+    return vector;
+}
+
+
+HashMapValue *read_hash_map(Reader &reader) {
+    reader.next(); // consume '{'
+    auto *map = new HashMapValue {};
+
+    while (auto token = reader.peek() ) {
+        if (*token == "}") {
+            reader.next();
+            return map;
+        }
+
+        auto key = read_form(reader);
+        auto value = read_form(reader);
+
+        map->set(key, value);
+    }
+
+    std::cerr << "EOF\n";
+    return map;
 }
 
 
