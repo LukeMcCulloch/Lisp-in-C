@@ -2,7 +2,7 @@
 #include "../include/reader.h"
 
 
-bool debug() {return 1;}
+bool debug() {return 0;}
 
 void debugprint(std::string input) {
     if (debug()) { std::cout << input << std::endl; }

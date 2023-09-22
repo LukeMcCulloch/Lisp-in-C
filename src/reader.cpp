@@ -5,36 +5,20 @@
 #include "../include/basic.h"
 
 
-// std::vector<std::string_view> tokenize(std::string &input) {
-//     Tokenizer tokenizer { input };
-//     //Reader reader { input };
-//     std::vector<std::string_view> vector;
-//     while (auto token = tokenizer.next()) {
-//         vector.push_back(token);
-//     }
-//     return vector;
-// }
 
 std::vector<std::string_view> tokenize(std::string &input) {
     debugprint("tokenize");
     Tokenizer tokenizer { input };
-    debugprint("1");
     std::vector<std::string_view> vector;
     while (auto token = tokenizer.next()) {
-        std::cout << "while working \n";
-        //std::cout << "[" << *token << "]\n";//dereference because it's optional
-        //printTokens(*token);
-        debugprint("vector.push_back");
         vector.push_back(*token);
     }
     return vector;
 }
 
 
-// Value *read_str(std::string &input) {
-//     //TODO: tokenize, parse into AST, return the AST
-// }
 
+//tokenize, parse into AST, return the AST
 Value *read_str(std::string &input) {
     debugprint("read_str");
     auto tokens = tokenize(input);
