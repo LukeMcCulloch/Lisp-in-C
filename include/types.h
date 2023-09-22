@@ -33,8 +33,8 @@ public:
         Exception,
     };
 
-    virtual std::string inspect() { assert(0); }
-    virtual Type type() { assert(0);}
+    virtual Type type() const { assert(0);}
+    virtual std::string inspect() const { assert(0); }
 
     //cast it if you have a pointer to the base class:
     ListValue* as_list();
@@ -58,8 +58,8 @@ public:
         m_list.push_back(value);
     }
 
-    virtual Type type() { return Type::List; }
-    virtual std::string inspect();
+    virtual Type type() const { return Type::List; }
+    virtual std::string inspect() const;
 
     auto begin() { return m_list.begin(); }
     auto end() { return m_list.end(); }
@@ -79,8 +79,8 @@ class VectorValue : public ListValue {
 
 public:
     VectorValue() {}
-    virtual Type type() { return Type::Vector; }
-    virtual std::string inspect();
+    virtual Type type() const { return Type::Vector; }
+    virtual std::string inspect() const;
 };
 
 
@@ -90,10 +90,13 @@ struct HashMapHash
     std::size_t operator()(Value* key) const noexcept {
         return std::hash<std::string> {}(key->inspect());
     }
+    std::size_t operator()(const Value* key) const noexcept {
+        return std::hash<std::string> {}(key->inspect());
+    }
 };
 
 struct HashMapPredicate {
-    bool operator()(Value* lhs, Value* rhs) const {
+    bool operator()(const Value* lhs, const Value* rhs) const {
         return lhs->inspect() == rhs->inspect(); // Fixme pointer comparison... we need a real equality later
     }
 };
@@ -103,8 +106,8 @@ class HashMapValue : public Value {
 public:
     HashMapValue () { }
 
-    virtual Type type() { return Type::HashMap; }
-    virtual std::string inspect();
+    virtual Type type() const { return Type::HashMap; }
+    virtual std::string inspect() const;
 
     void set(Value* key, Value* value) {
         m_map[key] = value;
@@ -132,10 +135,10 @@ public:
     SymbolValue(std::string_view str) 
         : m_str { str } {}
     
-    std::string str() { return m_str; }
+    std::string str() const { return m_str; }
 
-    virtual Type type() { return Type::Symbol; }
-    virtual std::string inspect() {
+    virtual Type type() const { return Type::Symbol; }
+    virtual std::string inspect() const {
         debugprint("SymbolValue::inspect");
         return str();
     }
@@ -151,8 +154,8 @@ public:
     IntegerValue( long l) : m_long { l } {}
 
     
-    virtual Type type() { return Type::Integer; }
-    virtual std::string inspect() {
+    virtual Type type() const { return Type::Integer; }
+    virtual std::string inspect() const {
         return std::to_string(m_long);
     }
 
@@ -172,8 +175,8 @@ public:
     FnValue( FnPtr fn) : m_fn { fn } {}
 
     
-    virtual Type type() { return Type::Fn; }
-    virtual std::string inspect() {
+    virtual Type type() const { return Type::Fn; }
+    virtual std::string inspect() const {
         return "<fn>";
     }
 
@@ -194,9 +197,9 @@ public:
 
 
     
-    virtual Type type() { return Type::Exception; }
+    virtual Type type() const { return Type::Exception; }
 
-    virtual std::string inspect() {
+    virtual std::string inspect() const {
         return "<exception" + m_message + ">";
     }
 

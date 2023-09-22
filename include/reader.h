@@ -7,6 +7,7 @@
 #include <string_view>
 #include <vector>
 
+
 #include "../include/types.h"
 
 class Tokenizer {
@@ -15,12 +16,12 @@ class Tokenizer {
         : m_input { input } {}
 
     std::optional<std::string_view> next() {
-        //debugprint("Tokenizer::next");
+        debugprint("Tokenizer::next");
         auto view = std::string_view(m_input);
 
         while (m_index < m_input.length()) {
             char c = m_input.at(m_index);
-
+            debugprint("while (m_index < m_input.length())");
             switch (c) {
             case ' ':
             case '\t':
@@ -117,8 +118,11 @@ class Tokenizer {
             }
             //++m_index;
         }
+        //debugprint(" return {}");
         return {};
     }
+
+
 
 private:
 
@@ -152,7 +156,9 @@ private:
         }
         return view.substr(start, m_index - start);
     }
-
+    
+    //bool matchRegex(const Regex& regex);
+    
     std::string &m_input;
     size_t m_index {0};
 };

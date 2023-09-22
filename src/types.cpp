@@ -50,7 +50,7 @@ ExceptionValue* Value::as_exception() {
 }
 
 
-std::string ListValue::inspect() {
+std::string ListValue::inspect() const {
     
     debugprint("ListValue::inspect");
     std::string out = "(";
@@ -69,7 +69,7 @@ std::string ListValue::inspect() {
 
 
 
-std::string VectorValue::inspect() {
+std::string VectorValue::inspect() const {
     
     debugprint("VectorValue::inspect");
     std::string out = "[";
@@ -88,7 +88,7 @@ std::string VectorValue::inspect() {
 
 
 
-std::string HashMapValue::inspect() {
+std::string HashMapValue::inspect() const {
     
     debugprint("HashMapValue::inspect");
     std::string out = "{";

@@ -2,9 +2,12 @@
 #include "../include/reader.h"
 
 
-bool debug() {return 0;}
+bool debug() {return 1;}
 
 void debugprint(std::string input) {
+    if (debug()) { std::cout << input << std::endl; }
+}
+void debugprint(long input) {
     if (debug()) { std::cout << input << std::endl; }
 }
 

@@ -20,6 +20,7 @@ Value* READ(std::string input) {
 }
 
 Value* EVAL(Value *ast, Env &env) {
+    debugprint("EVAL");
     /*
     ast is not a list: 
         then return the result of calling eval_ast on it.
@@ -31,10 +32,13 @@ Value* EVAL(Value *ast, Env &env) {
         using the rest of the evaluated list as its arguments.
     */
     if (ast->type() != Value::Type::List) {
+        debugprint("EVAL1");
         return eval_ast(ast, env);
     } else if (ast->as_list()->is_empty()) {
+        debugprint("EVAL2");
         return ast;
     } else {
+        debugprint("EVAL3");
         auto list = eval_ast(ast, env)->as_list();
         auto fn = list->at(0)->as_fn()->to_fn();
         Value* args[list->size() - 1];
@@ -49,6 +53,7 @@ Value* EVAL(Value *ast, Env &env) {
 
 
 Value* eval_ast(Value *ast, Env &env) {
+    debugprint("eval_ast");
     /*
     inputs: 
         ast (mal data type) 
@@ -115,8 +120,12 @@ std::string rep(std::string input, Env &env) {
     try {
         debugprint("rep");
         auto ast    = READ(input);
-        auto result = EVAL(ast, env);
-        return PRINT(result);
+        if (ast) { //todo: fixme hack -- fix 2 for the null input error
+            auto result = EVAL(ast, env);
+            return PRINT(result);
+        } else {
+            return "";
+        }
     } catch (ExceptionValue* exception) {
         std::cerr << exception->message() <<std::endl;
         return "";

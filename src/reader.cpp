@@ -1,3 +1,6 @@
+
+#include <cassert>
+
 #include "../include/reader.h"
 #include "../include/basic.h"
 
@@ -13,11 +16,15 @@
 // }
 
 std::vector<std::string_view> tokenize(std::string &input) {
+    debugprint("tokenize");
     Tokenizer tokenizer { input };
+    debugprint("1");
     std::vector<std::string_view> vector;
     while (auto token = tokenizer.next()) {
+        std::cout << "while working \n";
         //std::cout << "[" << *token << "]\n";//dereference because it's optional
-        printTokens(*token);
+        //printTokens(*token);
+        debugprint("vector.push_back");
         vector.push_back(*token);
     }
     return vector;
@@ -29,6 +36,7 @@ std::vector<std::string_view> tokenize(std::string &input) {
 // }
 
 Value *read_str(std::string &input) {
+    debugprint("read_str");
     auto tokens = tokenize(input);
     Reader reader { tokens };
     return read_form(reader);
@@ -36,6 +44,7 @@ Value *read_str(std::string &input) {
 
 
 Value *read_form(Reader &reader) {
+    debugprint("read_form");
     auto token = reader.peek();
 
     if (!token) return nullptr;//garbage collection to be done
@@ -70,6 +79,7 @@ Value *read_form(Reader &reader) {
         case '9':
             return read_integer(reader);
         default:
+            //assert(token.size() >= 1);
             return read_atom(reader);
     }
 }

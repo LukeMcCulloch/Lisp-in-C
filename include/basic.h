@@ -7,6 +7,7 @@
 
 bool debug();
 void debugprint(std::string input);
+void debugprint(long input);
 
 bool printTokensCheck();
 void printTokens(std::optional<std::string_view> input);
