@@ -19,6 +19,9 @@ class SymbolValue;
 class IntegerValue;
 class FnValue;
 class ExceptionValue;
+class TrueValue;
+class FalseValue;
+class NilValue;
 
 class Value {
 public:
@@ -31,12 +34,16 @@ public:
         Integer,
         Fn,
         Exception,
+        True,
+        False,
+        Nil,
     };
 
     virtual Type type() const = 0;
     virtual std::string inspect() const = 0;
 
     virtual bool is_symbol() const { return false;}
+    virtual bool is_truthy() const { return true;}
     //}
 
     //cast it if you have a pointer to the base class:
@@ -47,6 +54,9 @@ public:
     IntegerValue* as_integer();
     FnValue* as_fn();
     ExceptionValue* as_exception();
+    TrueValue* as_true();
+    FalseValue* as_false();
+    NilValue* as_nil();
 };
 
 
@@ -174,26 +184,69 @@ private:
 };
 
 
-// function pointer, 1.) old fashioned way
-using FnPtr = Value *(*)(size_t, Value**);
+// // function pointer, 1.) old fashioned way
+// using FnPtr = Value *(*)(size_t, Value**);
 
-// do this the old fashioned way for now (use variadic templates later)
+// // do this the old fashioned way for now (use variadic templates later)
+// class FnValue : public Value {
+// public:
+//     FnValue( FnPtr fn) : m_fn { fn } {}
+
+    
+//     virtual Type type() const override { return Type::Fn; }
+//     virtual std::string inspect() const override {
+//         return "<fn>";
+//     }
+
+//     FnPtr to_fn() { return m_fn; }
+
+
+// private:
+//     FnPtr m_fn { nullptr };
+// };
+
+// function, 2.) using std::function
+using Function = std::function<Value *(size_t, Value **)>;
+
+
+// do this the old fashioned way for now (use variadic templates at some point)
 class FnValue : public Value {
 public:
-    FnValue( FnPtr fn) : m_fn { fn } {}
+    FnValue( Function fn) : m_fn { fn } {}
 
     
     virtual Type type() const override { return Type::Fn; }
     virtual std::string inspect() const override {
-        return "<fn>";
+        return "#<function>";
     }
 
-    FnPtr to_fn() { return m_fn; }
+    Function to_fn() { return m_fn; }
 
 
 private:
-    FnPtr m_fn { nullptr };
+    Function m_fn { nullptr };
 };
+
+// class FnValue : public Value {
+// public:
+//     FnValue(Function fn)
+//         : m_fn { fn } { }
+
+//     virtual Type type() const override { return Type::Fn; }
+
+//     virtual std::string inspect(bool) const override {
+//         return "#<function>";
+//     }
+
+//     Function to_fn() { return m_fn; }
+
+//     bool operator==(const Value *other) const override {
+//         return other == this;
+//     }
+
+// private:
+//     Function m_fn { nullptr };
+// };
 
 
 
@@ -216,6 +269,68 @@ public:
 
 private:
     std::string m_message;
+};
+
+
+
+class TrueValue : public Value {
+public:
+    // static TrueValue *the() {
+    //     if (!s_instance)
+    //         s_instance = new TrueValue;
+    //     return s_instance;
+    // }
+
+    virtual Type type() const override { return Type::True; }
+    virtual std::string inspect() const override { return "true"; }
+    //virtual bool is_true() const override { return true; }
+
+private:
+    //TrueValue() { }
+
+    //static inline TrueValue *s_instance { nullptr };
+};
+
+
+
+class FalseValue : public Value {
+public:
+    // static FalseValue *the() {
+    //     if (!s_instance)
+    //         s_instance = new FalseValue;
+    //     return s_instance;
+    // }
+
+    virtual Type type() const override { return Type::False; }
+    virtual std::string inspect() const override { return "false"; }
+    //virtual bool is_false() const override { return true; }
+    virtual bool is_truthy() const override { return false; }
+
+private:
+    //FalseValue() { }
+
+    //static inline FalseValue *s_instance { nullptr };
+};
+
+
+
+class NilValue : public Value {
+public:
+    // static NilValue *the() {
+    //     if (!s_instance)
+    //         s_instance = new NilValue;
+    //     return s_instance;
+    // }
+
+    virtual Type type() const override { return Type::Nil; }
+    virtual std::string inspect() const override { return "nil"; }
+    //virtual bool is_nil() const override { return true; }
+    virtual bool is_truthy() const override { return false; }
+
+private:
+    //NilValue() { }
+
+    //static inline NilValue *s_instance { nullptr };
 };
 
 #endif /* __types_h */

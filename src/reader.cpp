@@ -29,11 +29,13 @@ Value *read_str(std::string &input) {
 
 Value *read_form(Reader &reader) {
     debugprint("read_form");
-    auto token = reader.peek();
+    auto maybe_token = reader.peek();
 
-    if (!token) return nullptr;//garbage collection to be done
+    if (!maybe_token) return nullptr;//garbage collection to be done
+
+    auto token = maybe_token.value();
     
-    switch (token.value()[0]) {
+    switch (token[0]) {
         case '(':
             return read_list(reader);
         case '[':
@@ -63,8 +65,18 @@ Value *read_form(Reader &reader) {
         case '9':
             return read_integer(reader);
         default:
-            //assert(token.size() >= 1);
-            return read_atom(reader);
+        //assert(token.size() >= 1);
+        if (token == "true") {
+            reader.next();
+            return new TrueValue ();
+        } else if (token == "false") {
+            reader.next();
+            return new FalseValue ();
+        } else if (token == "nil") {
+            reader.next();
+            return new NilValue ();
+        }
+        return read_atom(reader);
     }
 }
 

@@ -35,80 +35,111 @@ Value* EVAL(Value *ast, Env &env) {
         return ast;
     } else {
         
-       auto list = ast->as_list();
-       auto first = list->at(0);
+        auto list = ast->as_list();
+        auto first = list->at(0);
         
-        if (first->is_symbol() && first->as_symbol()->matches("def!")) {
-            /*
-            symbol "def!": 
-                call 
-                    the set method of the current environment 
-                    (second parameter of EVAL called env) 
-                using 
-                    the unevaluated first parameter 
-                    (second list element) as the symbol key 
-                    and 
-                    the evaluated second parameter as the value.
-            */
-            auto key = list->at(1)->as_symbol();
-            auto val = EVAL(list->at(2), env);
-            env.set(key, val);
-            return val;//? nil
+        if (first->is_symbol()) {
+            auto special = first->as_symbol();
+            if (special->matches("def!")) {
+                /*
+                symbol "def!": 
+                    call 
+                        the set method of the current environment 
+                        (second parameter of EVAL called env) 
+                    using 
+                        the unevaluated first parameter 
+                        (second list element) as the symbol key 
+                        and 
+                        the evaluated second parameter as the value.
+                */
+                auto key = list->at(1)->as_symbol();
+                auto val = EVAL(list->at(2), env);
+                env.set(key, val);
+                return val;//? nil
 
-        } else if (first->is_symbol() && first->as_symbol()->matches("let*")) {
-            /*
-            symbol "let*": 
-                create a new environment 
-                using the current environment as the outer value 
-                and then use the first parameter as a list of new bindings 
-                in the "let*" environment. 
+            } else if (special->matches("let*")) {
+                /*
+                symbol "let*": 
+                    create a new environment 
+                    using the current environment as the outer value 
+                    and then use the first parameter as a list of new bindings 
+                    in the "let*" environment. 
 
-                (let* [x "foo"
-                        y "bar"] 
-                        ...)
+                    (let* [x "foo"
+                            y "bar"] 
+                            ...)
 
-                Take the second element of the binding list, 
-                call EVAL using the new "let*" environment 
-                as the evaluation environment, 
-                then call set on the "let*" environment 
-                using the first binding list element as the key 
-                and the evaluated second element as the value. 
+                    Take the second element of the binding list, 
+                    call EVAL using the new "let*" environment 
+                    as the evaluation environment, 
+                    then call set on the "let*" environment 
+                    using the first binding list element as the key 
+                    and the evaluated second element as the value. 
 
-                This is repeated for each odd/even pair in the binding list. 
+                    This is repeated for each odd/even pair in the binding list. 
 
-                Note in particular, the bindings earlier in the list 
-                can be referred to by later bindings. 
-                Finally, the second parameter (third element) 
-                of the original let* form is evaluated 
-                using the new "let*" environment 
-                and the result is returned as the result 
-                of the let* (the new let environment 
-                is discarded upon completion).
-            */
-            auto new_env = new Env( &env );
-            auto bindings = list->at(1)->as_list();
-            for (size_t i=0; i<bindings->size(); i +=2) {
-                auto key = bindings->at(i)->as_symbol();
-                assert(i+1 < bindings->size());
-                auto val = EVAL(bindings->at(i+1), *new_env);
-                new_env->set(key, val);
+                    Note in particular, the bindings earlier in the list 
+                    can be referred to by later bindings. 
+                    Finally, the second parameter (third element) 
+                    of the original let* form is evaluated 
+                    using the new "let*" environment 
+                    and the result is returned as the result 
+                    of the let* (the new let environment 
+                    is discarded upon completion).
+                */
+                auto new_env = new Env( &env );
+                auto bindings = list->at(1)->as_list();
+                for (size_t i=0; i<bindings->size(); i +=2) {
+                    auto key = bindings->at(i)->as_symbol();
+                    assert(i+1 < bindings->size());
+                    auto val = EVAL(bindings->at(i+1), *new_env);
+                    new_env->set(key, val);
+                }
+                return EVAL(list->at(2), *new_env);//memory leak
+            
+            } else if (special->matches("do")) {
+                Value* result = nullptr;
+                assert(list->size() > 1);
+                for (size_t i = 1; i < list->size(); ++i) {
+                    result = EVAL(list->at(i), env);
+                }
+                return result;
+            } else if (special->matches("if")) {
+                auto condition = list->at(1);
+                auto true_expr = list->at(2);
+                auto false_expr = list->size() >= 4 ? list->at(3) : new NilValue {};
+                if (EVAL(condition, env)->is_truthy())
+                    return EVAL(true_expr, env);
+                else
+                    return EVAL(false_expr, env);
+            } else if (special->matches("fn*")) {
+                auto env_ptr = &env;//todo: capture the pointer itself instead of the reference
+                auto binds = list->at(1)->as_list();//first parameter from the outer scope
+                auto body = list->at(2);//second paraemter (third list element of ast from outer scope)
+                // create a closure:
+                auto closure = [env_ptr, binds, body](size_t argc, Value **args) {
+                    auto exprs = new ListValue {};//the parameters to the closure
+                    for (size_t i = 0; i < argc; ++i)
+                        exprs->push(args[i]);
+                    auto fn_env = new Env { env_ptr, binds, exprs };
+                    //return new NilValue {};
+                    return EVAL(body, *fn_env);
+                };//end closure
+                return new FnValue { closure };
             }
-            return EVAL(list->at(2), *new_env);//memory leak
-        } else{
-            /*
-            otherwise: 
-                call eval_ast on the list 
-                and apply the first element to the rest as before.
-            */
-            auto list = eval_ast(ast, env)->as_list();
-            auto fn = list->at(0)->as_fn()->to_fn();
-            Value* args[list->size() - 1];
-            for (size_t i = 1; i<list->size(); ++i) {
-                args[i - 1] = list->at(i);
-            }
-            return fn(list->size() -1, args);
+        } 
+        /*
+        otherwise: 
+            call eval_ast on the list 
+            and apply the first element to the rest as before.
+        */
+        auto eval_list = eval_ast(ast, env)->as_list();
+        auto fn = eval_list->at(0)->as_fn()->to_fn();
+        Value* args[eval_list->size() - 1];
+        for (size_t i = 1; i<eval_list->size(); ++i) {
+            args[i - 1] = eval_list->at(i);
         }
-
+        return fn(eval_list->size() -1, args);
     }
 
 }
@@ -276,7 +307,7 @@ int main() {
     env->set(new SymbolValue("+") , new FnValue { add });//wrap funciton pointer in function value to make it like our lisp data type
     env->set(new SymbolValue("-") , new FnValue { sub });
     env->set(new SymbolValue("*") , new FnValue { mul });
-    env->set(new SymbolValue("/") , new FnValue { div });
+    //env->set(new SymbolValue("/") , new FnValue { div });
 
     
 
