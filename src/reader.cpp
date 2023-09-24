@@ -5,9 +5,9 @@
 #include "../include/basic.h"
 
 
-
 std::vector<std::string_view> tokenize(std::string &input) {
     debugprint("tokenize");
+    //debugprint("Hello1");
     Tokenizer tokenizer { input };
     std::vector<std::string_view> vector;
     while (auto token = tokenizer.next()) {
@@ -68,13 +68,15 @@ Value *read_form(Reader &reader) {
         //assert(token.size() >= 1);
         if (token == "true") {
             reader.next();
-            return new TrueValue ();
+            return TrueValue::the();
         } else if (token == "false") {
             reader.next();
-            return new FalseValue ();
+            //return new FalseValue ();
+            return FalseValue::the();
         } else if (token == "nil") {
             reader.next();
-            return new NilValue ();
+            //return new NilValue ();
+            return NilValue::the();
         }
         return read_atom(reader);
     }
@@ -99,6 +101,7 @@ Value* read_integer(Reader &reader) { //maybe
 
     return new IntegerValue { num };
 }
+
 
 Value* read_quoted_value(Reader &reader) {
     auto token = reader.peek();

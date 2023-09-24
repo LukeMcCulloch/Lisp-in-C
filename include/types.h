@@ -11,6 +11,7 @@
 
 #include "../include/basic.h"
 
+
 //fwd declare
 class ListValue;
 class VectorValue;
@@ -22,6 +23,8 @@ class ExceptionValue;
 class TrueValue;
 class FalseValue;
 class NilValue;
+class StringValue;
+class TrueValue;
 
 class Value {
 public:
@@ -37,13 +40,25 @@ public:
         True,
         False,
         Nil,
+        String,
     };
 
     virtual Type type() const = 0;
-    virtual std::string inspect() const = 0;
+    //virtual std::string inspect() const = 0;
+    virtual std::string inspect(bool print_readably = false) const = 0;
 
     virtual bool is_symbol() const { return false;}
-    virtual bool is_truthy() const { return true;}
+    virtual bool is_integer() const { return false; }
+    virtual bool is_string() const { return false; }
+    virtual bool is_list() const { return false; }
+    virtual bool is_listy() const { return false; } //?
+    virtual bool is_nil() const { return false; }
+    virtual bool is_false() const { return false; }
+    virtual bool is_true() const { return false; }
+    virtual bool is_truthy() const { return true; }
+
+    
+    virtual bool operator==(const Value *other) const { return this == other; }
     //}
 
     //cast it if you have a pointer to the base class:
@@ -57,6 +72,13 @@ public:
     TrueValue* as_true();
     FalseValue* as_false();
     NilValue* as_nil();
+    StringValue *as_string();
+
+    
+    const NilValue *as_nil() const;
+    const StringValue *as_string() const;
+    const TrueValue *as_true() const;
+    
 };
 
 
@@ -72,7 +94,10 @@ public:
     }
 
     virtual Type type() const override { return Type::List; }
-    virtual std::string inspect() const override;
+    //virtual std::string inspect() const override;
+    virtual std::string inspect(bool print_readably = false) const override;
+    virtual bool is_list() const override { return true; }
+    virtual bool is_listy() const override { return true; }
 
     auto begin() { return m_list.begin(); }
     auto end() { return m_list.end(); }
@@ -93,20 +118,23 @@ class VectorValue : public ListValue {
 public:
     VectorValue() {}
     virtual Type type() const override { return Type::Vector; }
-    virtual std::string inspect() const override;
+    //virtual std::string inspect() const override;
+    virtual std::string inspect(bool print_readably = false) const override;
+    virtual bool is_list() const override { return false; }
 };
 
 
 
 struct HashMapHash
 {
-    std::size_t operator()(Value* key) const noexcept {
-        return std::hash<std::string> {}(key->inspect());
-    }
+    // std::size_t operator()(Value* key) const noexcept {
+    //     return std::hash<std::string> {}(key->inspect());
+    // }
     std::size_t operator()(const Value* key) const noexcept {
         return std::hash<std::string> {}(key->inspect());
     }
 };
+
 
 struct HashMapPredicate {
     bool operator()(const Value* lhs, const Value* rhs) const {
@@ -120,7 +148,8 @@ public:
     HashMapValue () { }
 
     virtual Type type() const override { return Type::HashMap; }
-    virtual std::string inspect() const override;
+    //virtual std::string inspect() const override;
+    virtual std::string inspect(bool print_readably = false) const override;
 
     void set(Value* key, Value* value) {
         m_map[key] = value;
@@ -154,7 +183,8 @@ public:
 
     virtual Type type() const override { return Type::Symbol; }
 
-    virtual std::string inspect() const override {
+    
+    virtual std::string inspect(bool) const override {
         debugprint("SymbolValue::inspect");
         return str();
     }
@@ -173,9 +203,13 @@ public:
 
     
     virtual Type type() const override { return Type::Integer; }
-    virtual std::string inspect() const override {
+    
+    virtual std::string inspect(bool) const override {
+        debugprint("IntegerValue::inspect");
         return std::to_string(m_long);
     }
+    
+    virtual bool is_integer() const override { return true; }
 
     long to_long() { return m_long;}
 
@@ -206,7 +240,7 @@ private:
 // };
 
 // function, 2.) using std::function
-using Function = std::function<Value *(size_t, Value **)>;
+using Function = std::function<Value* (size_t, Value**)>;
 
 
 // do this the old fashioned way for now (use variadic templates at some point)
@@ -216,7 +250,7 @@ public:
 
     
     virtual Type type() const override { return Type::Fn; }
-    virtual std::string inspect() const override {
+    virtual std::string inspect(bool) const override {
         return "#<function>";
     }
 
@@ -260,7 +294,7 @@ public:
     
     virtual Type type() const override { return Type::Exception; }
 
-    virtual std::string inspect() const override {
+    virtual std::string inspect(bool) const override {
         return "<exception" + m_message + ">";
     }
 
@@ -275,62 +309,85 @@ private:
 
 class TrueValue : public Value {
 public:
-    // static TrueValue *the() {
-    //     if (!s_instance)
-    //         s_instance = new TrueValue;
-    //     return s_instance;
-    // }
+    static TrueValue *the() {
+        if (!s_instance)
+            s_instance = new TrueValue;
+        return s_instance;
+    }
 
     virtual Type type() const override { return Type::True; }
-    virtual std::string inspect() const override { return "true"; }
+    virtual std::string inspect(bool) const override { return "true"; }
     //virtual bool is_true() const override { return true; }
 
 private:
-    //TrueValue() { }
+    TrueValue() { }
 
-    //static inline TrueValue *s_instance { nullptr };
+    static inline TrueValue *s_instance { nullptr };
 };
 
 
 
 class FalseValue : public Value {
 public:
-    // static FalseValue *the() {
-    //     if (!s_instance)
-    //         s_instance = new FalseValue;
-    //     return s_instance;
-    // }
+    static FalseValue *the() {
+        if (!s_instance)
+            s_instance = new FalseValue;
+        return s_instance;
+    }
 
     virtual Type type() const override { return Type::False; }
-    virtual std::string inspect() const override { return "false"; }
-    //virtual bool is_false() const override { return true; }
+    virtual std::string inspect(bool) const override { return "false"; }
+    virtual bool is_false() const override { return true; }
     virtual bool is_truthy() const override { return false; }
 
 private:
-    //FalseValue() { }
+    FalseValue() { }
 
-    //static inline FalseValue *s_instance { nullptr };
+    static inline FalseValue *s_instance { nullptr };
 };
 
 
 
 class NilValue : public Value {
 public:
-    // static NilValue *the() {
-    //     if (!s_instance)
-    //         s_instance = new NilValue;
-    //     return s_instance;
-    // }
+    static NilValue *the() {
+        if (!s_instance)
+            s_instance = new NilValue;
+        return s_instance;
+    }
 
     virtual Type type() const override { return Type::Nil; }
-    virtual std::string inspect() const override { return "nil"; }
-    //virtual bool is_nil() const override { return true; }
+    virtual std::string inspect(bool) const override { return "nil"; }
+    virtual bool is_nil() const override { return true; }
     virtual bool is_truthy() const override { return false; }
 
 private:
-    //NilValue() { }
+    NilValue() { }
 
-    //static inline NilValue *s_instance { nullptr };
+    static inline NilValue *s_instance { nullptr };
+};
+
+
+
+
+class StringValue : public Value {
+public:
+    StringValue(std::string_view str)
+        : m_str { str } { }
+
+    std::string str() const { return m_str; }
+
+    virtual Type type() const override { return Type::String; }
+    virtual bool is_string() const override { return true; }
+
+    bool operator==(const Value *other) const override {
+        return other->is_string() && other->as_string()->m_str == m_str;
+    }
+
+    virtual std::string inspect(bool print_readably = false) const override;
+
+private:
+    std::string m_str;
 };
 
 #endif /* __types_h */

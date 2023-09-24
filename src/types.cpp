@@ -3,7 +3,9 @@
 
 
 
+
 ListValue *Value::as_list() {
+    //debugprint("Hello1");
     assert(type() == Type::List || type() == Type::Vector);
     return static_cast<ListValue*>(this);
 }
@@ -66,58 +68,87 @@ NilValue *Value::as_nil() {
 }
 
 
-std::string ListValue::inspect() const {
-    
-    debugprint("ListValue::inspect");
+const StringValue *Value::as_string() const {
+    assert(type() == Type::String);
+    return static_cast<const StringValue *>(this);
+}
+
+
+
+std::string ListValue::inspect(bool print_readably) const {
     std::string out = "(";
     for (auto *value : m_list) {
-        out.append(value->inspect());
+        out.append(value->inspect(print_readably));
         out.append(" ");
-    };
+    }
     if (m_list.size() > 0) {
         out[out.length() - 1] = ')';
     } else {
         out.append(")");
     }
-    //out[out.length() - 1] = ')';
     return out;
 }
 
 
 
-std::string VectorValue::inspect() const {
-    
-    debugprint("VectorValue::inspect");
+
+
+std::string VectorValue::inspect(bool print_readably) const {
     std::string out = "[";
     for (auto *value : m_list) {
-        out.append(value->inspect());
+        out.append(value->inspect(print_readably));
         out.append(" ");
-    };
+    }
     if (m_list.size() > 0) {
         out[out.length() - 1] = ']';
     } else {
         out.append("]");
     }
-    //out[out.length() - 1] = ')';
     return out;
 }
 
 
 
-std::string HashMapValue::inspect() const {
-    
-    debugprint("HashMapValue::inspect");
+std::string HashMapValue::inspect(bool print_readably) const {
     std::string out = "{";
     for (auto pair : m_map) {
-        out.append(pair.first->inspect());
+        out.append(pair.first->inspect(print_readably));
         out.append(" ");
-        out.append(pair.second->inspect());
+        out.append(pair.second->inspect(print_readably));
         out.append(" ");
-    };
+    }
     if (m_map.size() > 0) {
         out[out.length() - 1] = '}';
     } else {
         out.append("}");
     }
     return out;
+}
+
+
+std::string StringValue::inspect(bool print_readably) const {
+    if (print_readably) {
+        std::string str = "\"";
+        for (char c : m_str) {
+            switch (c) {
+            case '"':
+                str += '\\';
+                str += c;
+                break;
+            case '\\':
+                str += '\\';
+                str += '\\';
+                break;
+            case '\n':
+                str += '\\';
+                str += 'n';
+                break;
+            default:
+                str += c;
+            }
+        }
+        str += "\"";
+        return str;
+    }
+    return m_str;
 }

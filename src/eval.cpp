@@ -7,6 +7,7 @@
 #include "../include/reader.h"
 #include "../include/printer.h"
 #include "../include/types.h"
+#include "../include/core.h"
 
 
 //fwd declare"
@@ -107,7 +108,8 @@ Value* EVAL(Value *ast, Env &env) {
             } else if (special->matches("if")) {
                 auto condition = list->at(1);
                 auto true_expr = list->at(2);
-                auto false_expr = list->size() >= 4 ? list->at(3) : new NilValue {};
+                //auto false_expr = list->size() >= 4 ? list->at(3) : new NilValue {};
+                auto false_expr = list->size() >= 4 ? list->at(3) : NilValue::the();
                 if (EVAL(condition, env)->is_truthy())
                     return EVAL(true_expr, env);
                 else
@@ -231,68 +233,6 @@ std::string rep(std::string input, Env &env) {
 }
 
 
-Value* add(size_t argc, Value** args) {
-    assert(argc ==2);
-    auto a = args[0];
-    auto b = args[1];
-
-    assert(a->type() == Value::Type::Integer);
-    assert(b->type() == Value::Type::Integer);
-
-    long result = a->as_integer()->to_long() + b->as_integer()->to_long();
-    return new IntegerValue { result };// even integers are on the heap
-    //TODO: (optional) use smart pointers to not heap allocate everything
-}
-
-
-
-Value* sub(size_t argc, Value** args) {
-    assert(argc ==2);
-    auto a = args[0];
-    auto b = args[1];
-
-    assert(a->type() == Value::Type::Integer);
-    assert(b->type() == Value::Type::Integer);
-
-    long result = a->as_integer()->to_long() - b->as_integer()->to_long();
-    std::cout << "sub: " << result << std::endl;
-    return new IntegerValue { result };// even integers are on the heap
-    //TODO: (optional) use smart pointers to not heap allocate everything
-}
-
-
-
-Value* mul(size_t argc, Value** args) {
-    assert(argc ==2);
-    auto a = args[0];
-    auto b = args[1];
-
-    assert(a->type() == Value::Type::Integer);
-    assert(b->type() == Value::Type::Integer);
-
-    long result = a->as_integer()->to_long() * b->as_integer()->to_long();
-    std::cout << "sub: " << result << std::endl;
-    return new IntegerValue { result };// even integers are on the heap
-    //TODO: (optional) use smart pointers to not heap allocate everything
-}
-
-
-
-Value* div(size_t argc, Value** args) {
-    assert(argc ==2);
-    auto a = args[0];
-    auto b = args[1];
-
-    assert(a->type() == Value::Type::Integer);
-    assert(b->type() == Value::Type::Integer);
-
-    long result = a->as_integer()->to_long() / b->as_integer()->to_long();
-    std::cout << "sub: " << result << std::endl;
-    return new IntegerValue { result };// even integers are on the heap
-    //TODO: (optional) use smart pointers to not heap allocate everything
-}
-
-
 
 
 
@@ -304,10 +244,9 @@ int main() {
 
     //Env env {};
     auto env = new Env { nullptr }; // top-level Env
-    env->set(new SymbolValue("+") , new FnValue { add });//wrap funciton pointer in function value to make it like our lisp data type
-    env->set(new SymbolValue("-") , new FnValue { sub });
-    env->set(new SymbolValue("*") , new FnValue { mul });
-    //env->set(new SymbolValue("/") , new FnValue { div });
+    auto ns = build_namespace();
+    for (auto pair : ns)
+        env->set(new SymbolValue(pair.first), new FnValue { pair.second });
 
     
 

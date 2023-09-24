@@ -27,10 +27,17 @@ OPENGL_LIBS       = -lGL -lGLU -lglut -lGLEW #-lX11
 
 ########################################################################################
 
+
+#OBJDIR := obj
+SRCDIR := src
+DEPDIR := src
+INCLUDEDIR := include
+BUILDDIR := run
+
 TARGET = run/CLispy
 CC = g++
 NXX = nvcc
-CFLAGS =  -Wall -Wextra -Werror  -I./include -I./src #adding these includes is essential!# -Wall  -Werror -ansi -pedantic  $(BNCpp_INCLUDE_PATH) -I./include -I./src
+CFLAGS =  -Wall -Wextra -Werror -MD -I./include -I./src #adding these includes is essential!# -Wall  -Werror -ansi -pedantic  $(BNCpp_INCLUDE_PATH) -I./include -I./src
 LFLAGS = #--ansi -pedantic -fopenmp -O1 # -Wall  -Werror -ansi -pedantic $(BNCpp_LIBRARY_PATH)
 NVFLAGS = # -g -G  -O0  
 LIBS =  $(OPENGL_LIBS) $(SUITESPARSE_LIBS) $(BLAS_LIBS)
@@ -45,31 +52,35 @@ CUDAFLAGS = #-arch=sm_75 #use > nvidia-smi
 ########################################################################################
 ## Feel free to edit below this line, if you know make.
 
-# $^ copy dependencies from line above
 
 
 all: $(TARGET)
 # rule for the target comes first
+
 # $<  The input file
 # $@  The file that is being made right now 
+# $^  The first prerequisite
+# $^ copy dependencies from line above
 
-OBJDIR := obj
 
-
-$(TARGET): $(OBJECTS) 
+$(TARGET): $(OBJECTS)
 	@echo "target = " $(TARGET)
 	@echo "headers = " $(HEADERS)
 	@echo "sources = " $(SOURCES)
 	@echo "objects = " $(OBJECTS)
-	$(CC) $(SOURCES) -MMD -o $@ $< $(TARGET) $(CUDAFLAGS) $(NVFLAGS) $(CFLAGS)
+#	$(CC) $(SOURCES) -MMD -o $@ $^ $(TARGET) $(CUDAFLAGS) $(NVFLAGS) $(CFLAGS)
+	$(CC) $(SOURCES) -MMD -o $@ $^ $(TARGET) $(CUDAFLAGS) $(NVFLAGS) $(CFLAGS)
 
 #$(OBJDIR)/%.o: src/%.cpp  ${HEADERS} $(DEPDIR)/%.d | $(DEPDIR)
 #	$(CC) -c $< -o $@ $(CUDAFLAGS) $(NVFLAGS) $(CFLAGS)
 
 
+
+
 HEADERS := $(wildcard include/*.h include/*.hpp include/*.cuh)
 # SOURCES := $(wildcard src/*.cpp src/*.c src/*.cu)
 SOURCES := $(wildcard src/*.cpp src/*.cu)
+#SOURCES := $(shell find src -name "*.cpp")
 OBJECTS := $(addprefix $(OBJDIR)/, $(notdir $(SOURCES:.cpp=.o))  $(notdir $(SOURCES:.cu=.o)))
 #
 # $(notdir names…): Extracts all but the directory-part of each 
@@ -89,16 +100,16 @@ OBJECTS := $(addprefix $(OBJDIR)/, $(notdir $(SOURCES:.cpp=.o))  $(notdir $(SOUR
 #	$(NXX) -o $< -MM 
 #-include $(DEPS)
 
-#DEPS := $(SOURCES:.cpp=.d)
-#.c.d:
-#	$(CC) -o $< -MM 
-#-include $(DEPS)
+# DEPS := $(SOURCES:.cpp=.d)
+# .c.d:
+# 	$(CC) -o $< -MM
+# -include $(DEPS)
 
-#DEPS := $(SOURCES:.o=.d)
+# DEPS := $(SOURCES:.o=.d)
 
-#-include $(DEPS)
+# -include $(DEPS)
 
-#%.o: %.c
+# %.o: %.c
 #    $(CC) -c $(CFLAGS) -MM -MF $(patsubst %.o,%.d,$@) -o $@ $<
 
 
@@ -135,21 +146,24 @@ clean:
 
 
 
-DEPDIR := .deps
-DEPFLAGS = -MT $@ -MMD -MP -MF $(DEPDIR)/$*.d
+# DEPDIR := .deps
+# DEPFLAGS = -MT $@ -MMD -MP -MF $(DEPDIR)/$*.d
 
-#COMPILE.c = $(CC) $(DEPFLAGS) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -c
+# #COMPILE.c = $(CC) $(DEPFLAGS) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -c
 
-%.o : %.c
-%.o : %.c $(DEPDIR)/%.d | $(DEPDIR)
-		$(TARGET) $(OUTPUT_OPTION) $<
+# %.o : %.c
+# %.o : %.c $(DEPDIR)/%.d | $(DEPDIR)
+# 		$(TARGET) $(OUTPUT_OPTION) $<
 
-$(DEPDIR): ; @mkdir -p $@
+# $(DEPDIR): ; @mkdir -p $@
 
-DEPFILES := $(SRCS:%.c=$(DEPDIR)/%.d)
-$(DEPFILES):
+# DEPFILES := $(SRCS:%.c=$(DEPDIR)/%.d)
+# $(DEPFILES):
 
-include $(wildcard $(DEPFILES))
+# include $(wildcard $(DEPFILES))
+
+# # pull in dependency info for *existing* .o files
+# -include $(OBJS:.o=.d)
 
 #
 #DO NOT DELETE THIS LINE
